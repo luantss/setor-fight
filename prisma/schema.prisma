@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  ADMIN
+  COMPETITOR
+}
+
+enum Belt {
+  BRANCA
+  AZUL
+  ROXA
+  MARROM
+  PRETA
+}
+
+enum Gender {
+  MASCULINO
+  FEMININO
+  MISTO
+}
+
+enum CompetitionStatus {
+  OPEN
+  CLOSED
+}
+
+/// CBJJO 2026 age divisions
+enum AgeDivisionCode {
+  PRE_MIRIM
+  MIRIM_1
+  MIRIM_2
+  INFANTIL_1
+  INFANTIL_2
+  INFANTO_JUVENIL_1
+  INFANTO_JUVENIL_2
+  INFANTO_JUVENIL_3
+  JUVENIL
+  ADULTO
+  MASTER
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+/// Synced with Supabase Auth — one row per authenticated user.
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique
+  role      Role     @default(COMPETITOR)
+  createdAt DateTime @default(now())
+
+  profile CompetitorProfile?
+
+  @@index([email])
+  @@map("users")
+}
+
+model CompetitorProfile {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @unique @db.Uuid
+  name      String
+  weight    Float
+  belt      Belt
+  birthDate DateTime @db.Date
+  gender    Gender
+  createdAt DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@index([userId])
+  @@map("competitor_profiles")
+}
+
+model Competition {
+  id        String            @id @default(uuid()) @db.Uuid
+  name      String
+  date      DateTime          @db.Date
+  location  String
+  status    CompetitionStatus @default(OPEN)
+  createdAt DateTime          @default(now())
+
+  categories    Category[]
+  registrations Registration[]
+
+  @@index([status])
+  @@map("competitions")
+}
+
+/// Canonical age divisions per CBJJO — shared across all competitions.
+model AgeDivision {
+  id      String          @id @default(uuid()) @db.Uuid
+  code    AgeDivisionCode @unique
+  minAge  Int
+  maxAge  Int
+
+  weightClasses WeightClass[]
+  categories    Category[]
+
+  @@map("age_divisions")
+}
+
+/// Weight classes scoped by gender and age division — source of truth for template generation.
+model WeightClass {
+  id            String      @id @default(uuid()) @db.Uuid
+  name          String
+  minWeight     Float
+  maxWeight     Float
+  gender        Gender
+  ageDivisionId String      @db.Uuid
+
+  ageDivision AgeDivision  @relation(fields: [ageDivisionId], references: [id], onDelete: Cascade)
+  categories  Category[]
+
+  @@unique([name, gender, ageDivisionId])
+  @@index([ageDivisionId])
+  @@index([gender, ageDivisionId])
+  @@map("weight_classes")
+}
+
+/// A concrete bracket slot inside a specific competition, generated from the CBJJO template.
+model Category {
+  id            String   @id @default(uuid()) @db.Uuid
+  competitionId String   @db.Uuid
+  belt          Belt
+  gender        Gender
+  ageDivisionId String   @db.Uuid
+  weightClassId String   @db.Uuid
+  createdAt     DateTime @default(now())
+
+  competition   Competition   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  ageDivision   AgeDivision   @relation(fields: [ageDivisionId], references: [id])
+  weightClass   WeightClass   @relation(fields: [weightClassId], references: [id])
+  registrations Registration[]
+
+  @@unique([competitionId, belt, gender, ageDivisionId, weightClassId])
+  @@index([competitionId])
+  @@index([competitionId, belt, gender, ageDivisionId, weightClassId])
+  @@index([ageDivisionId])
+  @@index([weightClassId])
+  @@map("categories")
+}
+
+model Registration {
+  id            String   @id @default(uuid()) @db.Uuid
+  competitionId String   @db.Uuid
+  competitorId  String   @db.Uuid
+  categoryId    String   @db.Uuid
+  createdAt     DateTime @default(now())
+
+  competition Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competitor  CompetitorProfile @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  category    Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, competitorId])
+  @@index([competitionId])
+  @@index([competitorId])
+  @@index([categoryId])
+  @@map("registrations")
+}
+
