@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { cadastroAction } from "../actions";
+import DateInput from "@/app/components/DateInput";
 
 export default function CadastroPage() {
   const [state, action, isPending] = useActionState(cadastroAction, null);
@@ -74,10 +75,9 @@ export default function CadastroPage() {
                 <label htmlFor="birthDate" className="block text-sm font-medium text-gray-700 mb-1">
                   Data de nascimento
                 </label>
-                <input
+                <DateInput
                   id="birthDate"
                   name="birthDate"
-                  type="date"
                   required
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />

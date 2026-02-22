@@ -145,24 +145,85 @@ Rules:
 - Default role = COMPETITOR
 
 After successful registration:
-- Redirect to `/dashboard`
+- Redirect to `/competicoes`
 
 ---
 
-# 5. COMPETITOR AREA
+
+# 5. ROUTES MAP
+
+| Route | Access | Description |
+|---|---|---|
+| `/` | Public | Landing page |
+| `/competicoes` | Public | Open competitions list |
+| `/competicoes/[id]` | Public (enrollment requires auth) | Competition detail |
+| `/competidor/perfil` | Auth required | Competitor profile |
+| `/admin` | ADMIN only | Admin panel |
+| `/admin/competicoes/[id]` | ADMIN only | Admin competition detail |
+
+> ⚠️ The old `/dashboard` route must redirect to `/competicoes`.
+
+---
+
+# 6. LANDING PAGE — `/`
+
+## Purpose
+
+Informative page for visitors who are not yet logged in.
+
+## Layout
+
+Full-page layout with sections:
+
+### Section 1 — Hero
+
+- Title: "Competição de Jiu-Jitsu CBJJO 2026"
+- Subtitle: short description of the event
+- CTA Button (red): "Ver Competições" → `/competicoes`
+
+### Section 2 — Tabela de Categorias
+
+- Section title: "Tabela de Categorias CBJJO 2026"
+- Full-width image placeholder: `<img src="/tabela-categorias.png" alt="Tabela de Categorias CBJJO 2026" />`
+- Caption below: "Tabela oficial de categorias por idade, peso e faixa."
+
+### Section 3 — Como Funciona
+
+Three simple cards:
+
+1. "Crie sua conta" — "Registre-se com seus dados de atleta."
+2. "Inscreva-se" — "Sua categoria será atribuída automaticamente."
+
+### Section 4 — CTA Final
+
+- Text: "Pronto para competir?"
+- Button (red): "Ver Competições Abertas" → `/competicoes`
+
+## Rules
+
+- NO heavy animations
+- NO gradients
+- Clean and professional
+- Fully responsive
+
+---
+
+# 7. COMPETITOR AREA
 
 > **Authentication rules:**
-> - `/dashboard` — **PUBLIC**. Any visitor can browse open competitions.
+> - `/competicoes` — **PUBLIC**. Any visitor can browse open competitions.
 > - `/competicoes/[id]` — **PUBLIC** to view. Enrollment requires authentication.
 > - `/competidor/perfil` — **Requires authentication**.
 
 ---
 
-## 5.1 Dashboard — `/dashboard`
+## 7.1 Competitions List — `/competicoes`
+
+> Replaces the old `/dashboard` route.
 
 ### 🔴 IMPORTANT
 
-The dashboard is **public**. No login required to browse competitions.
+This page is **public**. No login required to browse competitions.
 
 Components:
 
@@ -179,11 +240,11 @@ Each competition card must show:
 Empty state:
 - "Nenhuma competição aberta no momento."
 
-Note: The Navbar must show the "Competições" link even for unauthenticated users.
+Note: The Navbar must show the "Competições" link even for unauthenticated users, pointing to `/competicoes`.
 
 ---
 
-## 5.2 Profile Page — `/perfil`
+## 7.2 Profile Page — `/competidor/perfil`
 
 The profile page is for EDITING information only.
 
@@ -208,7 +269,7 @@ This page allows updating weight before a competition.
 
 ---
 
-## 5.3 Competition Details — `/competicoes/[id]`
+## 7.3 Competition Details — `/competicoes/[id]`
 
 Display:
 
@@ -241,7 +302,7 @@ Display:
 
 Buttons:
 
-- "Editar Perfil" → redirect to `/perfil`
+- "Editar Perfil" → redirect to `/competidor/perfil`
 - "Confirmar e Inscrever"
 
 Enrollment only proceeds after explicit confirmation.
@@ -266,13 +327,13 @@ Prevent:
 
 ---
 
-# 6. ADMIN AREA
+# 8. ADMIN AREA
 
 All routes require ADMIN role (validated server-side).
 
 ---
 
-## 6.1 Admin Dashboard — `/admin`
+## 8.1 Admin Dashboard — `/admin`
 
 Components:
 
@@ -282,7 +343,7 @@ Components:
 
 ---
 
-## 6.2 Create Competition
+## 8.2 Create Competition
 
 Form fields:
 
@@ -294,36 +355,18 @@ Submit via Server Action.
 
 ---
 
-## 6.3 Competition Admin Page — `/admin/competicoes/[id]`
+## 8.3 Competition Admin Page — `/admin/competicoes/[id]`
 
 Must contain Tabs:
 
 - Informações
-- Categorias
 - Inscrições
 
----
-
-# 7. ADMIN — CATEGORIAS TAB
-
-Components:
-
-- Button: "Gerar Categorias CBJJO 2026"
-- Display:
-  - Total de categorias geradas
-  - Breakdown por divisão
-
-Must handle:
-
-- Loading state
-- Success message
-- Error message
-
-Generator must be idempotent.
+> ⚠️ The "Categorias" tab is REMOVED. Category generation is handled automatically by the seed. No admin UI for this.
 
 ---
 
-# 8. ADMIN — INSCRIÇÕES TAB
+# 9. ADMIN — INSCRIÇÕES TAB
 
 Display:
 
@@ -340,9 +383,11 @@ Table with:
 
 - Nome
 - Faixa
-- Idade
-- Peso
+- Divisão de Idade
+- Categoria de Peso
+- Peso (kg)
 - Sexo
+- Idade
 
 Avoid N+1 queries.
 Data must be preloaded server-side.
@@ -352,7 +397,7 @@ Empty state:
 
 ---
 
-# 9. EXPORT BUTTONS
+# 10. EXPORT BUTTONS
 
 Inside Admin → Inscrições tab:
 
@@ -367,9 +412,16 @@ Must:
 - Download file
 - Show loading state
 
+## Export columns (Excel and PDF)
+
+| # | Nome | Faixa | Divisão de Idade | Categoria de Peso | Peso (kg) | Sexo | Idade |
+|---|---|---|---|---|---|---|---|
+
+All text must be in PORTUGUES BR.
+
 ---
 
-# 10. REQUIRED COMPONENTS
+# 11. REQUIRED COMPONENTS
 
 Reusable components:
 
@@ -388,7 +440,7 @@ All based on ShadCN UI.
 
 ---
 
-# 11. STATES THAT MUST EXIST
+# 12. STATES THAT MUST EXIST
 
 Every page must handle:
 
@@ -401,7 +453,7 @@ Never render blank UI.
 
 ---
 
-# 12. RESPONSIVENESS RULES
+# 13. RESPONSIVENESS RULES
 
 Mobile-first design.
 
@@ -420,7 +472,7 @@ Rules:
 
 ---
 
-# 13. FORBIDDEN PRACTICES
+# 14. FORBIDDEN PRACTICES
 
 Do NOT:
 
@@ -431,10 +483,12 @@ Do NOT:
 - Hardcode categories
 - Add unnecessary animations
 - Use inline styles
+- Do NOT add admin UI for category generation
+- Do NOT use `/dashboard` as the competitions route (use `/competicoes`)
 
 ---
 
-# 14. PERFORMANCE REQUIREMENTS
+# 15. PERFORMANCE REQUIREMENTS
 
 Frontend must:
 
@@ -448,7 +502,7 @@ Must handle 1000 registrations without UI degradation.
 
 ---
 
-# 15. FINAL RESULT EXPECTATION
+# 16. FINAL RESULT EXPECTATION
 
 The frontend must deliver:
 

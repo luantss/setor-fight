@@ -44,5 +44,11 @@ export function buildCategoryName(
 }
 
 export function calculateAge(birthDate: Date, competitionDate: Date): number {
-  return competitionDate.getFullYear() - birthDate.getFullYear();
+  const years =
+    competitionDate.getUTCFullYear() - birthDate.getUTCFullYear();
+  const hasBirthdayOccurred =
+    competitionDate.getUTCMonth() > birthDate.getUTCMonth() ||
+    (competitionDate.getUTCMonth() === birthDate.getUTCMonth() &&
+      competitionDate.getUTCDate() >= birthDate.getUTCDate());
+  return hasBirthdayOccurred ? years : years - 1;
 }

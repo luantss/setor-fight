@@ -14,16 +14,16 @@ import type { Role } from "@/app/generated/prisma/client";
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the current Supabase session or null.
- * Use in Server Components and Server Actions.
+ * Returns the authenticated user verified by the Supabase Auth server, or null.
+ * Prefer this over getSession() to avoid insecure cookie-only reads.
  */
-export async function getSession() {
+export async function getUser() {
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return session;
+  return user;
 }
 
 /**
@@ -31,13 +31,13 @@ export async function getSession() {
  * Throws if not authenticated.
  */
 export async function requireAuth() {
-  const session = await getSession();
+  const user = await getUser();
 
-  if (!session) {
+  if (!user) {
     throw new AuthError("Não autenticado. Faça login para continuar.");
   }
 
-  return session.user;
+  return user;
 }
 
 // ---------------------------------------------------------------------------

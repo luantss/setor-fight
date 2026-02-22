@@ -31,6 +31,7 @@ interface CompetitorRow {
   name: string;
   belt: Belt;
   ageDivisionCode: AgeDivisionCode;
+  weightClassName: string;
   weight: number;
   gender: "MASCULINO" | "FEMININO";
   age: number;
@@ -79,6 +80,7 @@ async function fetchData(competitionId: string, prisma: PrismaClient) {
       name: reg.competitor.name,
       belt: reg.competitor.belt,
       ageDivisionCode: reg.category.ageDivision.code,
+      weightClassName: reg.category.weightClass.name,
       weight: reg.competitor.weight,
       gender: reg.competitor.gender as "MASCULINO" | "FEMININO",
       age: calculateAge(reg.competitor.birthDate, competition.date),
@@ -99,19 +101,19 @@ export async function generateExcel(
   const { competition, groups } = await fetchData(competitionId, prisma);
 
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "JJ Platform";
+  workbook.creator = "JJ";
   workbook.created = new Date();
 
   const sheet = workbook.addWorksheet("Inscrições");
 
   // Title
-  sheet.mergeCells("A1:G1");
+  sheet.mergeCells("A1:H1");
   const titleCell = sheet.getCell("A1");
   titleCell.value = competition.name;
   titleCell.font = { bold: true, size: 14 };
   titleCell.alignment = { horizontal: "center" };
 
-  sheet.mergeCells("A2:G2");
+  sheet.mergeCells("A2:H2");
   const dateCell = sheet.getCell("A2");
   dateCell.value = competition.date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
   dateCell.alignment = { horizontal: "center" };
@@ -121,7 +123,7 @@ export async function generateExcel(
 
   for (const group of groups) {
     // Category header
-    sheet.mergeCells(rowIdx, 1, rowIdx, 7);
+    sheet.mergeCells(rowIdx, 1, rowIdx, 8);
     const catCell = sheet.getCell(rowIdx, 1);
     catCell.value = `${group.categoryName} (${group.rows.length} atleta${group.rows.length !== 1 ? "s" : ""})`;
     catCell.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -131,7 +133,7 @@ export async function generateExcel(
 
     // Column headers
     const header = sheet.getRow(rowIdx);
-    header.values = ["#", "Nome", "Faixa", "Divisão", "Peso (kg)", "Sexo", "Idade"];
+    header.values = ["#", "Nome", "Faixa", "Divisão de Idade", "Categoria de Peso", "Peso (kg)", "Sexo", "Idade"];
     header.font = { bold: true };
     header.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF0F0F0" } };
     rowIdx++;
@@ -143,6 +145,7 @@ export async function generateExcel(
         r.name,
         beltLabel[r.belt],
         ageDivisionLabel[r.ageDivisionCode],
+        r.weightClassName,
         r.weight,
         genderShort[r.gender],
         r.age,
@@ -154,7 +157,7 @@ export async function generateExcel(
   }
 
   // Column widths
-  [5, 32, 12, 24, 12, 8, 8].forEach((w, i) => {
+  [5, 32, 12, 20, 18, 10, 8, 8].forEach((w, i) => {
     sheet.getColumn(i + 1).width = w;
   });
 
@@ -166,13 +169,14 @@ export async function generateExcel(
 // ---------------------------------------------------------------------------
 
 const PDF_COLS = [
-  { x: 40, w: 20 },   // #
-  { x: 62, w: 168 },  // Nome
-  { x: 232, w: 64 },  // Faixa
-  { x: 298, w: 98 },  // Divisão
-  { x: 398, w: 46 },  // Peso
-  { x: 446, w: 42 },  // Sexo
-  { x: 490, w: 36 },  // Idade
+  { x: 40,  w: 20  }, // #
+  { x: 62,  w: 130 }, // Nome
+  { x: 194, w: 52  }, // Faixa
+  { x: 248, w: 86  }, // Divisão de Idade
+  { x: 336, w: 78  }, // Categoria de Peso
+  { x: 416, w: 38  }, // Peso (kg)
+  { x: 456, w: 36  }, // Sexo
+  { x: 494, w: 30  }, // Idade
 ];
 
 export async function generatePdf(
@@ -240,7 +244,7 @@ export async function generatePdf(
       doc.y = headerY + 22;
 
       // Column headers
-      writeRow(["#", "Nome", "Faixa", "Divisão", "Peso", "Sexo", "Idade"], true);
+      writeRow(["#", "Nome", "Faixa", "Divisão de Idade", "Categoria de Peso", "Peso", "Sexo", "Idade"], true);
 
       // Data rows
       group.rows.forEach((r, i) => {
@@ -250,6 +254,7 @@ export async function generatePdf(
           r.name,
           beltLabel[r.belt],
           ageDivisionLabel[r.ageDivisionCode],
+          r.weightClassName,
           `${r.weight}kg`,
           genderShort[r.gender],
           `${r.age}a`,

@@ -10,14 +10,14 @@ export async function GET(
 ) {
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
 
-  const role = await getUserRole(session.user.id);
+  const role = await getUserRole(user.id);
   if (role !== "ADMIN") {
     return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }

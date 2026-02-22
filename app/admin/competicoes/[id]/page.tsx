@@ -3,11 +3,10 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { requireAdmin } from "@/lib/auth";
 import { getPrismaClient } from "@/lib/prisma";
-import { ageDivisionLabel, buildCategoryName, calculateAge } from "@/lib/labels";
+import { buildCategoryName, calculateAge } from "@/lib/labels";
 import TabNav from "./TabNav";
-import CategoriasTab, { type DivisionBreakdown } from "./CategoriasTab";
 import InscricoesTab, { type CategoryGroup, type RegistrationRow } from "./InscricoesTab";
-import type { AgeDivisionCode, Belt, Gender } from "@/app/generated/prisma/client";
+import type { Belt, Gender } from "@/app/generated/prisma/client";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -89,7 +88,7 @@ export default async function AdminCompetitionPage({
   try {
     await requireAdmin();
   } catch {
-    redirect("/dashboard");
+    redirect("/competicoes");
   }
 
   const { id } = await params;
@@ -99,29 +98,6 @@ export default async function AdminCompetitionPage({
 
   const competition = await prisma.competition.findUnique({ where: { id } });
   if (!competition) notFound();
-
-  // ── Categorias tab data ──────────────────────────────────────────────────
-  let totalCategories = 0;
-  let breakdowns: DivisionBreakdown[] = [];
-
-  if (tab === "categorias" || tab === "info") {
-    const categories = await prisma.category.findMany({
-      where: { competitionId: id },
-      include: { ageDivision: true },
-    });
-    totalCategories = categories.length;
-
-    const divMap = new Map<AgeDivisionCode, number>();
-    for (const cat of categories) {
-      const code = cat.ageDivision.code;
-      divMap.set(code, (divMap.get(code) ?? 0) + 1);
-    }
-    breakdowns = Array.from(divMap.entries())
-      .map(([code, count]) => ({ code, count }))
-      .sort((a, b) =>
-        ageDivisionLabel[a.code].localeCompare(ageDivisionLabel[b.code]),
-      );
-  }
 
   // ── Inscrições tab data ─────────────────────────────────────────────────
   let categoryGroups: CategoryGroup[] = [];
@@ -160,6 +136,7 @@ export default async function AdminCompetitionPage({
         name: reg.competitor.name,
         belt: reg.competitor.belt,
         ageDivisionCode: reg.category.ageDivision.code,
+        weightClassName: reg.category.weightClass.name,
         weight: reg.competitor.weight,
         gender: reg.competitor.gender as "MASCULINO" | "FEMININO",
         age: calculateAge(reg.competitor.birthDate, competition.date),
@@ -210,14 +187,6 @@ export default async function AdminCompetitionPage({
             <InfoTab competition={competition} />
           )}
 
-          {tab === "categorias" && (
-            <CategoriasTab
-              competitionId={id}
-              totalCategories={totalCategories}
-              breakdowns={breakdowns}
-            />
-          )}
-
           {tab === "inscricoes" && (
             <InscricoesTab
               competitionId={id}
@@ -226,7 +195,7 @@ export default async function AdminCompetitionPage({
             />
           )}
 
-          {tab !== "info" && tab !== "categorias" && tab !== "inscricoes" && (
+          {tab !== "info" && tab !== "inscricoes" && (
             <InfoTab competition={competition} />
           )}
         </div>

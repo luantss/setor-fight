@@ -9,7 +9,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "JJ Platform — Plataforma de Competições de Jiu-Jitsu",
+  title: "JJ — Plataforma de Competições de Jiu-Jitsu",
   description:
     "Inscreva-se em competições de Jiu-Jitsu e tenha sua categoria atribuída automaticamente conforme as regras da CBJJO 2026.",
 };

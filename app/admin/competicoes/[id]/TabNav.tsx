@@ -5,7 +5,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 const TABS = [
   { key: "info", label: "Informações" },
-  { key: "categorias", label: "Categorias" },
   { key: "inscricoes", label: "Inscrições" },
 ] as const;
 

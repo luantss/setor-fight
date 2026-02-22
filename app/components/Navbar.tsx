@@ -1,30 +1,30 @@
 import Link from "next/link";
-import { getSession, getUserRole } from "@/lib/auth";
+import { getUser, getUserRole } from "@/lib/auth";
 import { logoutAction } from "@/app/(auth)/actions";
 
 export default async function Navbar() {
-  const session = await getSession();
-  const role = session ? await getUserRole(session.user.id) : null;
+  const user = await getUser();
+  const role = user ? await getUserRole(user.id) : null;
 
   return (
     <nav className="bg-black text-white">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/dashboard" className="text-lg font-bold tracking-wide hover:text-red-400 transition-colors">
-          JJ Platform
+        <Link href="/" className="text-lg font-bold tracking-wide hover:text-red-400 transition-colors">
+          JJ
         </Link>
 
         {/* Nav links */}
         <div className="flex items-center gap-6 text-sm">
           {/* Competições is always visible */}
           <Link
-            href="/dashboard"
+            href="/competicoes"
             className="hover:text-red-400 transition-colors"
           >
             Competições
           </Link>
 
-          {session ? (
+          {user ? (
             <>
               <Link
                 href="/competidor/perfil"

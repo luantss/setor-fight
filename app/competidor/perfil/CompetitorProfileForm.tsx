@@ -5,6 +5,24 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { saveCompetitorProfile } from "./actions";
+import { displayToIso } from "@/app/components/DateInput";
+
+// ---------------------------------------------------------------------------
+// Date helpers
+// ---------------------------------------------------------------------------
+
+function isoToDisplay(iso: string): string {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return "";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function autoFormat(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
 
 // ---------------------------------------------------------------------------
 // Form-level schema (weight kept as string — coerced before server call)
@@ -16,7 +34,7 @@ const formSchema = z.object({
     .min(3, "Nome deve ter ao menos 3 caracteres."),
   birthDate: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida. Use AAAA-MM-DD."),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida. Use o formato DD/MM/AAAA."),
   gender: z.enum(["MASCULINO", "FEMININO"] as const, {
     message: "Selecione um sexo.",
   }),
@@ -50,10 +68,14 @@ export default function CompetitorProfileForm({
   const [isPending, startTransition] = useTransition();
   const [serverError, setServerError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [birthDateDisplay, setBirthDateDisplay] = useState(
+    isoToDisplay(defaultValues?.birthDate ?? ""),
+  );
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -115,8 +137,16 @@ export default function CompetitorProfileForm({
         </label>
         <input
           id="birthDate"
-          type="date"
-          {...register("birthDate")}
+          type="text"
+          inputMode="numeric"
+          placeholder="DD/MM/AAAA"
+          value={birthDateDisplay}
+          maxLength={10}
+          onChange={(e) => {
+            const formatted = autoFormat(e.target.value);
+            setBirthDateDisplay(formatted);
+            setValue("birthDate", displayToIso(formatted), { shouldValidate: true });
+          }}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
         />
         {errors.birthDate && (

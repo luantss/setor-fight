@@ -5,7 +5,7 @@ import { getPrismaClient } from "@/lib/prisma";
 import CreateCompetitionForm from "./CreateCompetitionForm";
 
 export const metadata = {
-  title: "Painel Administrativo | JJ Platform",
+  title: "Painel Administrativo | JJ",
 };
 
 function formatDate(date: Date) {

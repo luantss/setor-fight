@@ -88,7 +88,6 @@ Folder structure:
 
 ## ADMIN
 - Create competition
-- Generate categories (CBJJO template 2026)
 - View registrations grouped by category
 - Export Excel
 - Export PDF
@@ -223,22 +222,15 @@ The template must define:
 - Weight classes per age division
 - Gender rules per division
 
-Generation logic:
+IMPORTANT: Categories are seeded automatically at application startup via `prisma/seed.ts`.
+There is NO admin UI to generate categories. The seed is the single source of truth.
 
-If ageDivision < JUVENIL:
-    Generate categories only with gender = MISTO
-
-If ageDivision >= JUVENIL:
-    Generate categories for:
-        - MASCULINO
-        - FEMININO
-
-Generator must:
+The seed must:
 
 1. Load template
 2. Ensure AgeDivisions exist
 3. Ensure WeightClasses exist
-4. Generate Categories for:
+4. Generate Categories for all competitions already in DB:
     - All belts
     - Correct gender rule per division
     - All weight classes
@@ -274,10 +266,11 @@ Enrollment system must:
 Admin must be able to:
 
 - Create competition
-- Generate categories
 - View registrations grouped by category
 - Export Excel
 - Export PDF
+
+Admin does NOT manage category generation. Categories are seeded automatically.
 
 ---
 
@@ -290,9 +283,11 @@ Excel and PDF must:
 - Display:
     - Nome
     - Faixa
-    - Idade
-    - Peso
+    - Divisão de Idade
+    - Categoria de Peso
+    - Peso (kg)
     - Sexo
+    - Idade
 
 ---
 
@@ -330,6 +325,7 @@ Do NOT implement:
 - Multi-tenancy
 - QR check-in
 - Rankings
+- Admin UI for category generation
 
 ---
 
@@ -344,7 +340,20 @@ Do NOT implement:
 
 ---
 
-# 18. FINAL OBJECTIVE
+# 18. ROUTES
+
+- `/` → Landing page (public)
+- `/competicoes` → List of open competitions (public) — previously `/dashboard`
+- `/competicoes/[id]` → Competition detail + enrollment
+- `/competidor/perfil` → Competitor profile (auth required)
+- `/admin` → Admin panel (ADMIN role required)
+- `/admin/competicoes/[id]` → Admin competition detail
+- `/login` → Login
+- `/cadastro` → Registration
+
+---
+
+# 19. FINAL OBJECTIVE
 
 Deliver a production-viable MVP capable of:
 

@@ -13,6 +13,7 @@ export interface RegistrationRow {
   name: string;
   belt: Belt;
   ageDivisionCode: AgeDivisionCode;
+  weightClassName: string;
   weight: number;
   gender: "MASCULINO" | "FEMININO";
   age: number;
@@ -58,14 +59,15 @@ function AccordionItem({ group }: { group: CategoryGroup }) {
           {group.registrations.length === 0 ? (
             <p className="px-4 py-4 text-sm text-gray-400">Nenhum atleta inscrito.</p>
           ) : (
-            <table className="w-full text-sm min-w-[520px]">
+            <table className="w-full text-sm min-w-160">
               <thead>
                 <tr className="bg-gray-50">
                   <th className="text-left px-4 py-2 font-medium text-gray-500">#</th>
                   <th className="text-left px-4 py-2 font-medium text-gray-500">Nome</th>
                   <th className="text-left px-4 py-2 font-medium text-gray-500">Faixa</th>
-                  <th className="text-left px-4 py-2 font-medium text-gray-500">Divisão</th>
-                  <th className="text-right px-4 py-2 font-medium text-gray-500">Peso</th>
+                  <th className="text-left px-4 py-2 font-medium text-gray-500">Divisão de Idade</th>
+                  <th className="text-left px-4 py-2 font-medium text-gray-500">Categoria de Peso</th>
+                  <th className="text-right px-4 py-2 font-medium text-gray-500">Peso (kg)</th>
                   <th className="text-left px-4 py-2 font-medium text-gray-500">Sexo</th>
                   <th className="text-right px-4 py-2 font-medium text-gray-500">Idade</th>
                 </tr>
@@ -77,6 +79,7 @@ function AccordionItem({ group }: { group: CategoryGroup }) {
                     <td className="px-4 py-2 font-medium text-black">{r.name}</td>
                     <td className="px-4 py-2 text-gray-600">{beltLabel[r.belt]}</td>
                     <td className="px-4 py-2 text-gray-600">{ageDivisionLabel[r.ageDivisionCode]}</td>
+                    <td className="px-4 py-2 text-gray-600">{r.weightClassName}</td>
                     <td className="px-4 py-2 text-right text-gray-600">{r.weight} kg</td>
                     <td className="px-4 py-2 text-gray-600">{genderLabel[r.gender as Gender]}</td>
                     <td className="px-4 py-2 text-right text-gray-600">{r.age} anos</td>

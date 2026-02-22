@@ -4,7 +4,7 @@ import { getCompetitorProfile } from "./actions";
 import CompetitorProfileForm from "./CompetitorProfileForm";
 
 export const metadata = {
-  title: "Meu Perfil | JJ Platform",
+  title: "Meu Perfil | JJ",
 };
 
 function formatDate(date: Date): string {

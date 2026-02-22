@@ -2,6 +2,7 @@
 
 import { useState, useActionState } from "react";
 import { createCompetitionAction, type ActionResult } from "./actions";
+import DateInput from "@/app/components/DateInput";
 
 export default function CreateCompetitionForm() {
   const [open, setOpen] = useState(false);
@@ -53,10 +54,9 @@ export default function CreateCompetitionForm() {
             <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-1">
               Data
             </label>
-            <input
+            <DateInput
               id="date"
               name="date"
-              type="date"
               required
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
             />

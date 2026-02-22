@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPrismaClient } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getUser } from "@/lib/auth";
 import ConfirmAndEnroll from "./ConfirmAndEnroll";
 import type { AgeDivisionCode, Belt, Gender } from "@/app/generated/prisma/client";
 
@@ -65,7 +65,7 @@ export default async function CompetitionPage({ params }: PageProps) {
   if (!competition) notFound();
 
   // Check if user is authenticated and already enrolled
-  const session = await getSession();
+  const user = await getUser();
   let profile: {
     id: string;
     name: string;
@@ -83,9 +83,9 @@ export default async function CompetitionPage({ params }: PageProps) {
     };
   } | null = null;
 
-  if (session) {
+  if (user) {
     const dbProfile = await prisma.competitorProfile.findUnique({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
     });
 
     if (dbProfile) {
@@ -123,7 +123,7 @@ export default async function CompetitionPage({ params }: PageProps) {
     <main className="min-h-screen bg-white py-10">
       <div className="max-w-6xl mx-auto px-4">
         <Link
-          href="/dashboard"
+          href="/competicoes"
           className="text-sm text-gray-500 hover:text-black transition-colors mb-6 inline-block"
         >
           ← Voltar para competições
