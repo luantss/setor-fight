@@ -170,7 +170,7 @@ export default async function CompetitionPage({ params }: PageProps) {
               <CategoryDetail label="Sexo" value={genderLabel[registration.category.gender]} />
             </div>
           </div>
-        ) : session && profile ? (
+        ) : user && profile ? (
           /* Authenticated with profile — show confirmation step */
           <div className="bg-white rounded-xl shadow border border-gray-200 p-8">
             {isOpen ? (
@@ -184,7 +184,7 @@ export default async function CompetitionPage({ params }: PageProps) {
               </>
             )}
           </div>
-        ) : session && !profile ? (
+        ) : user && !profile ? (
           /* Authenticated but no profile */
           <div className="bg-white rounded-xl shadow border border-gray-200 p-8">
             <h2 className="text-lg font-bold text-black mb-1">Perfil incompleto</h2>
