@@ -3,39 +3,8 @@ import { notFound } from "next/navigation";
 import { getPrismaClient } from "@/lib/prisma";
 import { getUser } from "@/lib/auth";
 import ConfirmAndEnroll from "./ConfirmAndEnroll";
+import { beltLabel, genderLabel, ageDivisionLabel } from "@/lib/labels";
 import type { AgeDivisionCode, Belt, Gender } from "@/app/generated/prisma/client";
-
-// ---------------------------------------------------------------------------
-// Label maps (PT-BR)
-// ---------------------------------------------------------------------------
-
-const beltLabel: Record<Belt, string> = {
-  BRANCA: "Branca",
-  AZUL: "Azul",
-  ROXA: "Roxa",
-  MARROM: "Marrom",
-  PRETA: "Preta",
-};
-
-const genderLabel: Record<Gender, string> = {
-  MASCULINO: "Masculino",
-  FEMININO: "Feminino",
-  MISTO: "Misto",
-};
-
-const ageDivisionLabel: Record<AgeDivisionCode, string> = {
-  PRE_MIRIM: "Pré-Mirim",
-  MIRIM_1: "Mirim 1",
-  MIRIM_2: "Mirim 2",
-  INFANTIL_1: "Infantil 1",
-  INFANTIL_2: "Infantil 2",
-  INFANTO_JUVENIL_1: "Infanto-Juvenil 1",
-  INFANTO_JUVENIL_2: "Infanto-Juvenil 2",
-  INFANTO_JUVENIL_3: "Infanto-Juvenil 3",
-  JUVENIL: "Juvenil",
-  ADULTO: "Adulto",
-  MASTER: "Master",
-};
 
 function formatDate(date: Date): string {
   return date.toLocaleDateString("pt-BR", {
@@ -75,12 +44,9 @@ export default async function CompetitionPage({ params }: PageProps) {
     weight: number;
   } | null = null;
   let registration: {
-    category: {
-      belt: Belt;
-      gender: Gender;
-      ageDivision: { code: AgeDivisionCode };
-      weightClass: { name: string };
-    };
+    belt: Belt;
+    ageDivision: { code: AgeDivisionCode };
+    weightClass: { name: string; gender: Gender };
   } | null = null;
 
   if (user) {
@@ -106,12 +72,8 @@ export default async function CompetitionPage({ params }: PageProps) {
           },
         },
         include: {
-          category: {
-            include: {
-              ageDivision: true,
-              weightClass: true,
-            },
-          },
+          ageDivision: true,
+          weightClass: true,
         },
       });
     }
@@ -126,7 +88,7 @@ export default async function CompetitionPage({ params }: PageProps) {
           href="/competicoes"
           className="text-sm text-gray-500 hover:text-black transition-colors mb-6 inline-block"
         >
-          ← Voltar para competições
+          ← Voltar para Campeonatos
         </Link>
 
         {/* Competition card */}
@@ -161,13 +123,13 @@ export default async function CompetitionPage({ params }: PageProps) {
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <CategoryDetail label="Faixa" value={beltLabel[registration.category.belt]} />
+              <CategoryDetail label="Faixa" value={beltLabel[registration.belt]} />
               <CategoryDetail
                 label="Divisão"
-                value={ageDivisionLabel[registration.category.ageDivision.code]}
+                value={ageDivisionLabel[registration.ageDivision.code]}
               />
-              <CategoryDetail label="Peso" value={registration.category.weightClass.name} />
-              <CategoryDetail label="Sexo" value={genderLabel[registration.category.gender]} />
+              <CategoryDetail label="Peso" value={registration.weightClass.name} />
+              <CategoryDetail label="Sexo" value={genderLabel[registration.weightClass.gender]} />
             </div>
           </div>
         ) : user && profile ? (

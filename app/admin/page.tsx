@@ -40,7 +40,7 @@ export default async function AdminPage() {
           <CreateCompetitionForm />
         </div>
         <p className="text-sm text-gray-500 mb-8">
-          Gerencie competições, categorias e inscrições.
+          Gerencie Campeonatos, categorias e inscrições.
         </p>
 
         {competitions.length === 0 ? (

@@ -18,9 +18,12 @@ const AGE_DIVISIONS: { code: AgeDivisionCode; minAge: number; maxAge: number }[]
   { code: "INFANTO_JUVENIL_1", minAge: 13, maxAge: 13 }, // 13 anos
   { code: "INFANTO_JUVENIL_2", minAge: 14, maxAge: 14 }, // 14 anos
   { code: "INFANTO_JUVENIL_3", minAge: 15, maxAge: 15 }, // 15 anos
-  { code: "JUVENIL",           minAge: 16, maxAge: 17 }, // 16 e 17 anos
-  { code: "ADULTO",            minAge: 18, maxAge: 29 }, // +18 anos
-  { code: "MASTER",            minAge: 30, maxAge: 120 },// +18 anos Masters
+  { code: "JUVENIL_FEMININO",  minAge: 16, maxAge: 17 }, // 16 e 17 anos
+  { code: "JUVENIL_MASCULINO", minAge: 16, maxAge: 17 }, // 16 e 17 anos
+  { code: "ADULTO_FEMININO",   minAge: 18, maxAge: 29 }, // +18 anos
+  { code: "ADULTO_MASCULINO",  minAge: 18, maxAge: 29 }, // +18 anos
+  { code: "MASTER_FEMININO",   minAge: 30, maxAge: 120 },// +18 anos Masters
+  { code: "MASTER_MASCULINO",  minAge: 30, maxAge: 120 },// +18 anos Masters
 ];
 
 // ---------------------------------------------------------------------------
@@ -81,7 +84,7 @@ const WEIGHT_CLASSES: Record<AgeDivisionCode, WeightClassDef[]> = {
     { name: "Pluma",       minWeight: 32.2, maxWeight: 36.200 },
     { name: "Pena",        minWeight: 36.2, maxWeight: 39.300 },
     { name: "Leve",        minWeight: 39.3, maxWeight: 42.300 },
-    { name: "Médio",       minWeight: 42.3, maxWeight: 45     },
+    { name: "Médio",       minWeight: 42.3, maxWeight: 45.300 },
     { name: "Meio-Pesado", minWeight: 45,   maxWeight: 48.300 },
     { name: "Pesado",      minWeight: 48.3, maxWeight: 52.500 },
     { name: "Super-Pesado",minWeight: 52.5, maxWeight: 56.500 },
@@ -121,22 +124,7 @@ const WEIGHT_CLASSES: Record<AgeDivisionCode, WeightClassDef[]> = {
     { name: "Pesadíssimo", minWeight: 73,   maxWeight: 9999   },
   ],
   // JUVENIL — split by gender
-  JUVENIL: [
-    // Feminino
-    { name: "Galo",        minWeight: 0,    maxWeight: 44.300 },
-    { name: "Pluma",       minWeight: 44.3, maxWeight: 48.300 },
-    { name: "Pena",        minWeight: 48.3, maxWeight: 52.500 },
-    { name: "Leve",        minWeight: 52.5, maxWeight: 56.500 },
-    { name: "Médio",       minWeight: 56.5, maxWeight: 60.500 },
-    { name: "Meio-Pesado", minWeight: 60.5, maxWeight: 65     },
-    { name: "Pesado",      minWeight: 65,   maxWeight: 69     },
-    { name: "Super-Pesado",minWeight: 69,   maxWeight: 73     },
-    { name: "Pesadíssimo", minWeight: 73,   maxWeight: 9999   },
-    { name: "Absoluto",    minWeight: 0,    maxWeight: 60.500 },
-  ],
-  // ADULTO — split by gender (same defs, applied to both in loop)
-  ADULTO: [
-    // Masculino
+  JUVENIL_MASCULINO: [
     { name: "Ligeiro",     minWeight: 0,    maxWeight: 48.500 },
     { name: "Galo",        minWeight: 48.5, maxWeight: 53.500 },
     { name: "Pluma",       minWeight: 53.5, maxWeight: 58.500 },
@@ -147,10 +135,31 @@ const WEIGHT_CLASSES: Record<AgeDivisionCode, WeightClassDef[]> = {
     { name: "Pesado",      minWeight: 79.3, maxWeight: 84.300 },
     { name: "Super-Pesado",minWeight: 84.3, maxWeight: 89.300 },
     { name: "Pesadíssimo", minWeight: 89.3, maxWeight: 9999   },
-    { name: "Absoluto",    minWeight: 0,    maxWeight: 9999   },
   ],
-  MASTER: [
-    // Feminino
+  JUVENIL_FEMININO: [
+    { name: "Galo",        minWeight: 0,    maxWeight: 44.300 },
+    { name: "Pluma",       minWeight: 44.3, maxWeight: 48.300 },
+    { name: "Pena",        minWeight: 48.3, maxWeight: 52.500 },
+    { name: "Leve",        minWeight: 52.5, maxWeight: 56.500 },
+    { name: "Médio",       minWeight: 56.5, maxWeight: 60.500 },
+    { name: "Meio-Pesado", minWeight: 60.5, maxWeight: 65     },
+    { name: "Pesado",      minWeight: 65,   maxWeight: 69     },
+    { name: "Super-Pesado",minWeight: 69,   maxWeight: 73     },
+    { name: "Pesadíssimo", minWeight: 73,   maxWeight: 9999   },
+  ],
+  // ADULTO — split by gender 
+  ADULTO_MASCULINO: [
+    { name: "Galo",        minWeight: 0,    maxWeight: 57.500 },
+    { name: "Pluma",       minWeight: 57.5, maxWeight: 64     },
+    { name: "Pena",        minWeight: 64,   maxWeight: 70     },
+    { name: "Leve",        minWeight: 70,   maxWeight: 76     },
+    { name: "Médio",       minWeight: 76,   maxWeight: 82.300 },
+    { name: "Meio-Pesado", minWeight: 82.3, maxWeight: 88.300 },
+    { name: "Pesado",      minWeight: 88.3, maxWeight: 94.300 },
+    { name: "Super-Pesado",minWeight: 94.3, maxWeight: 100.500 },
+    { name: "Pesadíssimo", minWeight: 100.5, maxWeight: 9999   },
+  ],
+  ADULTO_FEMININO: [
     { name: "Galo",        minWeight: 0,    maxWeight: 48.500 },
     { name: "Pluma",       minWeight: 48.5, maxWeight: 53.500 },
     { name: "Pena",        minWeight: 53.5, maxWeight: 58.500 },
@@ -160,79 +169,41 @@ const WEIGHT_CLASSES: Record<AgeDivisionCode, WeightClassDef[]> = {
     { name: "Pesado",      minWeight: 74,   maxWeight: 79.300 },
     { name: "Super-Pesado",minWeight: 79.3, maxWeight: 84.300 },
     { name: "Pesadíssimo", minWeight: 84.3, maxWeight: 9999   },
-    { name: "Absoluto",    minWeight: 0,    maxWeight: 9999   },
+  ],
+  MASTER_FEMININO: [
+    { name: "Galo",        minWeight: 0,    maxWeight: 48.500 },
+    { name: "Pluma",       minWeight: 48.5, maxWeight: 53.500 },
+    { name: "Pena",        minWeight: 53.5, maxWeight: 58.500 },
+    { name: "Leve",        minWeight: 58.5, maxWeight: 64     },
+    { name: "Médio",       minWeight: 64,   maxWeight: 69     },
+    { name: "Meio-Pesado", minWeight: 69,   maxWeight: 74     },
+    { name: "Pesado",      minWeight: 74,   maxWeight: 79.300 },
+    { name: "Super-Pesado",minWeight: 79.3, maxWeight: 84.300 },
+    { name: "Pesadíssimo", minWeight: 84.3, maxWeight: 9999   },
+  ],
+  MASTER_MASCULINO: [
+    { name: "Galo",        minWeight: 0,    maxWeight: 57.500 },
+    { name: "Pluma",       minWeight: 57.5, maxWeight: 64     },
+    { name: "Pena",        minWeight: 64,   maxWeight: 70     },
+    { name: "Leve",        minWeight: 70,   maxWeight: 76     },
+    { name: "Médio",       minWeight: 76,   maxWeight: 82.300 },
+    { name: "Meio-Pesado", minWeight: 82.3, maxWeight: 88.300 },
+    { name: "Pesado",      minWeight: 88.3, maxWeight: 94.300 },
+    { name: "Super-Pesado",minWeight: 94.3, maxWeight: 100.500 },
+    { name: "Pesadíssimo", minWeight: 100.5, maxWeight: 9999   },
   ],
 };
 
-// Divisions below JUVENIL are MISTO; JUVENIL+ are split MASCULINO/FEMININO
-const MISTO_DIVISIONS: AgeDivisionCode[] = [
-  "PRE_MIRIM",
-  "MIRIM_1",
-  "MIRIM_2",
-  "INFANTIL_1",
-  "INFANTIL_2",
-  "INFANTO_JUVENIL_1",
-  "INFANTO_JUVENIL_2",
-  "INFANTO_JUVENIL_3",
-];
-
-// JUVENIL Feminino has different weight ranges than Masculino
-const JUVENIL_FEMININO: WeightClassDef[] = [
-  { name: "Galo",        minWeight: 0,    maxWeight: 44.300 },
-  { name: "Pluma",       minWeight: 44.3, maxWeight: 48.300 },
-  { name: "Pena",        minWeight: 48.3, maxWeight: 52.500 },
-  { name: "Leve",        minWeight: 52.5, maxWeight: 56.500 },
-  { name: "Médio",       minWeight: 56.5, maxWeight: 60.500 },
-  { name: "Meio-Pesado", minWeight: 60.5, maxWeight: 65     },
-  { name: "Pesado",      minWeight: 65,   maxWeight: 69     },
-  { name: "Super-Pesado",minWeight: 69,   maxWeight: 73     },
-  { name: "Pesadíssimo", minWeight: 73,   maxWeight: 9999   },
-  { name: "Absoluto",    minWeight: 0,    maxWeight: 60.500 },
-];
-
-const JUVENIL_MASCULINO: WeightClassDef[] = [
-  { name: "Galo",        minWeight: 0,    maxWeight: 48.500 },
-  { name: "Pluma",       minWeight: 48.5, maxWeight: 53.500 },
-  { name: "Pena",        minWeight: 53.5, maxWeight: 58.500 },
-  { name: "Leve",        minWeight: 58.5, maxWeight: 64     },
-  { name: "Médio",       minWeight: 64,   maxWeight: 69     },
-  { name: "Meio-Pesado", minWeight: 69,   maxWeight: 74     },
-  { name: "Pesado",      minWeight: 74,   maxWeight: 79.300 },
-  { name: "Super-Pesado",minWeight: 79.3, maxWeight: 84.300 },
-  { name: "Pesadíssimo", minWeight: 84.3, maxWeight: 9999   },
-  { name: "Absoluto",    minWeight: 0,    maxWeight: 74     },
-];
-
-const ADULTO_MASTER_FEMININO: WeightClassDef[] = [
-  { name: "Galo",        minWeight: 0,    maxWeight: 48.500 },
-  { name: "Pluma",       minWeight: 48.5, maxWeight: 53.500 },
-  { name: "Pena",        minWeight: 53.5, maxWeight: 58.500 },
-  { name: "Leve",        minWeight: 58.5, maxWeight: 64     },
-  { name: "Médio",       minWeight: 64,   maxWeight: 69     },
-  { name: "Meio-Pesado", minWeight: 69,   maxWeight: 74     },
-  { name: "Pesado",      minWeight: 74,   maxWeight: 79.300 },
-  { name: "Super-Pesado",minWeight: 79.3, maxWeight: 84.300 },
-  { name: "Pesadíssimo", minWeight: 84.3, maxWeight: 9999   },
-  { name: "Absoluto",    minWeight: 0,    maxWeight: 9999   },
-];
-
-function weightClassesForDivisionAndGender(
-  code: AgeDivisionCode,
-  gender: Gender
-): WeightClassDef[] {
-  if (code === "JUVENIL") {
-    return gender === "FEMININO" ? JUVENIL_FEMININO : JUVENIL_MASCULINO;
-  }
-  if (code === "ADULTO" || code === "MASTER") {
-    return gender === "FEMININO" ? ADULTO_MASTER_FEMININO : WEIGHT_CLASSES[code];
-  }
-  return WEIGHT_CLASSES[code];
-}
-
-function gendersForDivision(code: AgeDivisionCode): Gender[] {
-  return MISTO_DIVISIONS.includes(code)
-    ? ["MISTO"]
-    : ["MASCULINO", "FEMININO"];
+/**
+ * Each AgeDivisionCode directly encodes its gender:
+ *   - ends with _FEMININO  → FEMININO
+ *   - ends with _MASCULINO → MASCULINO
+ *   - otherwise (MISTO divisions below JUVENIL) → MISTO
+ */
+function genderForDivision(code: AgeDivisionCode): Gender {
+  if (code.endsWith("_FEMININO")) return "FEMININO";
+  if (code.endsWith("_MASCULINO")) return "MASCULINO";
+  return "MISTO";
 }
 
 // ---------------------------------------------------------------------------
@@ -260,34 +231,31 @@ async function main(): Promise<void> {
 
   for (const division of persistedDivisions) {
     const code = division.code as AgeDivisionCode;
-    const genders = gendersForDivision(code);
+    const gender = genderForDivision(code);
+    const classes = WEIGHT_CLASSES[code];
 
-    for (const gender of genders) {
-      const classes = weightClassesForDivisionAndGender(code, gender);
-
-      for (const wc of classes) {
-        await prisma.weightClass.upsert({
-          where: {
-            name_gender_ageDivisionId: {
-              name:          wc.name,
-              gender,
-              ageDivisionId: division.id,
-            },
-          },
-          update: {
-            minWeight: wc.minWeight,
-            maxWeight: wc.maxWeight,
-          },
-          create: {
+    for (const wc of classes) {
+      await prisma.weightClass.upsert({
+        where: {
+          name_gender_ageDivisionId: {
             name:          wc.name,
-            minWeight:     wc.minWeight,
-            maxWeight:     wc.maxWeight,
             gender,
             ageDivisionId: division.id,
           },
-        });
-        count++;
-      }
+        },
+        update: {
+          minWeight: wc.minWeight,
+          maxWeight: wc.maxWeight,
+        },
+        create: {
+          name:          wc.name,
+          minWeight:     wc.minWeight,
+          maxWeight:     wc.maxWeight,
+          gender,
+          ageDivisionId: division.id,
+        },
+      });
+      count++;
     }
   }
 

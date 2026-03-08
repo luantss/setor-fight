@@ -14,7 +14,7 @@ export default function CadastroPage() {
       <div className="w-full max-w-lg bg-white rounded-xl shadow border border-gray-200 p-8">
         <h1 className="text-2xl font-bold text-black mb-1">Criar Conta</h1>
         <p className="text-sm text-gray-500 mb-6">
-          Preencha todos os dados para se inscrever em competições de Jiu-Jitsu.
+          Preencha todos os dados para se inscrever em Campeonatos.
         </p>
 
         <form action={action} className="space-y-5">

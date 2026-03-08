@@ -179,7 +179,7 @@ Full-page layout with sections:
 
 - Title: "Competição de Jiu-Jitsu CBJJO 2026"
 - Subtitle: short description of the event
-- CTA Button (red): "Ver Competições" → `/competicoes`
+- CTA Button (red): "Ver Campeonatos" → `/competicoes`
 
 ### Section 2 — Tabela de Categorias
 
@@ -197,7 +197,7 @@ Three simple cards:
 ### Section 4 — CTA Final
 
 - Text: "Pronto para competir?"
-- Button (red): "Ver Competições Abertas" → `/competicoes`
+- Button (red): "Ver Campeonatos Abertas" → `/competicoes`
 
 ## Rules
 
@@ -227,7 +227,7 @@ This page is **public**. No login required to browse competitions.
 
 Components:
 
-- Page title: "Competições Abertas"
+- Page title: "Campeonatos Abertas"
 - List of competitions in Card format
 
 Each competition card must show:
@@ -240,7 +240,7 @@ Each competition card must show:
 Empty state:
 - "Nenhuma competição aberta no momento."
 
-Note: The Navbar must show the "Competições" link even for unauthenticated users, pointing to `/competicoes`.
+Note: The Navbar must show the "Campeonatos" link even for unauthenticated users, pointing to `/competicoes`.
 
 ---
 
@@ -362,7 +362,7 @@ Must contain Tabs:
 - Informações
 - Inscrições
 
-> ⚠️ The "Categorias" tab is REMOVED. Category generation is handled automatically by the seed. No admin UI for this.
+> ⚠️ The "Categorias" tab is REMOVED. There is no category generation step. Categories are resolved at enrollment time: the domain matcher looks up the seeded `AgeDivision` and `WeightClass` tables and stores the result directly on `Registration`. No admin UI for this.
 
 ---
 

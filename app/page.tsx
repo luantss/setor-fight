@@ -4,7 +4,7 @@ import CategoryTableImage from "@/app/components/CategoryTableImage";
 export const metadata = {
   title: "Jiu-Jitsu CBJJO 2026 | JJ",
   description:
-    "Plataforma oficial de inscrições para competições de Jiu-Jitsu seguindo as regras CBJJO 2026. Categoria atribuída automaticamente.",
+    "Plataforma oficial de inscrições para Campeonatos de Jiu-Jitsu seguindo as regras CBJJO 2026. Categoria atribuída automaticamente.",
 };
 
 export default function HomePage() {
@@ -14,7 +14,7 @@ export default function HomePage() {
       <section className="bg-black text-white py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4">
-            Competições
+            Campeonatos
             <br />
             <span className="text-red-500">Inscreva-se já</span>
           </h1>
@@ -26,7 +26,7 @@ export default function HomePage() {
             href="/competicoes"
             className="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-md transition-colors text-sm sm:text-base"
           >
-            Ver Competições
+            Ver Campeonatos
           </Link>
         </div>
       </section>
@@ -77,13 +77,13 @@ export default function HomePage() {
             Pronto para competir?
           </h2>
           <p className="text-gray-400 mb-8 text-sm sm:text-base">
-            Acesse as competições abertas e garanta sua vaga.
+            Acesse as Campeonatos abertas e garanta sua vaga.
           </p>
           <Link
             href="/competicoes"
             className="inline-block bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-8 rounded-md transition-colors text-sm sm:text-base"
           >
-            Ver Competições Abertas
+            Ver Campeonatos Abertas
           </Link>
         </div>
       </section>

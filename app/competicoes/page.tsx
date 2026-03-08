@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getPrismaClient } from "@/lib/prisma";
 
 export const metadata = {
-  title: "Competições | JJ",
+  title: "Campeonatos | JJ",
 };
 
 function formatDate(date: Date): string {
@@ -24,15 +24,15 @@ export default async function CompeticoesPage() {
   return (
     <main className="min-h-screen bg-white py-10">
       <div className="max-w-6xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-black mb-1">Competições Abertas</h1>
+        <h1 className="text-2xl font-bold text-black mb-1">Campeonatos Abertas</h1>
         <p className="text-sm text-gray-500 mb-8">
-          Inscreva-se nas competições disponíveis abaixo.
+          Inscreva-se nas Campeonatos disponíveis abaixo.
         </p>
 
         {competitions.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-lg">Nenhuma competição aberta no momento.</p>
-            <p className="text-sm mt-2">Volte em breve para novas competições.</p>
+            <p className="text-sm mt-2">Volte em breve para novas Campeonatos.</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

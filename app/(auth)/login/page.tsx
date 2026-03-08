@@ -12,7 +12,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-xl shadow border border-gray-200 p-8">
         <h1 className="text-2xl font-bold text-black mb-1">Entrar</h1>
         <p className="text-sm text-gray-500 mb-6">
-          Acesse sua conta para se inscrever em competições.
+          Acesse sua conta para se inscrever em Campeonatos.
         </p>
 
         <form action={action} className="space-y-4">

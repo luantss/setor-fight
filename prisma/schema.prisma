@@ -51,9 +51,12 @@ enum AgeDivisionCode {
   INFANTO_JUVENIL_1
   INFANTO_JUVENIL_2
   INFANTO_JUVENIL_3
-  JUVENIL
-  ADULTO
-  MASTER
+  JUVENIL_FEMININO
+  JUVENIL_MASCULINO
+  ADULTO_FEMININO
+  ADULTO_MASCULINO
+  MASTER_FEMININO
+  MASTER_MASCULINO
 }
 
 // ---------------------------------------------------------------------------
@@ -98,7 +101,6 @@ model Competition {
   status    CompetitionStatus @default(OPEN)
   createdAt DateTime          @default(now())
 
-  categories    Category[]
   registrations Registration[]
 
   @@index([status])
@@ -113,7 +115,7 @@ model AgeDivision {
   maxAge  Int
 
   weightClasses WeightClass[]
-  categories    Category[]
+  registrations Registration[]
 
   @@map("age_divisions")
 }
@@ -127,8 +129,8 @@ model WeightClass {
   gender        Gender
   ageDivisionId String      @db.Uuid
 
-  ageDivision AgeDivision  @relation(fields: [ageDivisionId], references: [id], onDelete: Cascade)
-  categories  Category[]
+  ageDivision   AgeDivision    @relation(fields: [ageDivisionId], references: [id], onDelete: Cascade)
+  registrations Registration[]
 
   @@unique([name, gender, ageDivisionId])
   @@index([ageDivisionId])
@@ -136,44 +138,26 @@ model WeightClass {
   @@map("weight_classes")
 }
 
-/// A concrete bracket slot inside a specific competition, generated from the CBJJO template.
-model Category {
-  id            String   @id @default(uuid()) @db.Uuid
-  competitionId String   @db.Uuid
-  belt          Belt
-  gender        Gender
-  ageDivisionId String   @db.Uuid
-  weightClassId String   @db.Uuid
-  createdAt     DateTime @default(now())
-
-  competition   Competition   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  ageDivision   AgeDivision   @relation(fields: [ageDivisionId], references: [id])
-  weightClass   WeightClass   @relation(fields: [weightClassId], references: [id])
-  registrations Registration[]
-
-  @@unique([competitionId, belt, gender, ageDivisionId, weightClassId])
-  @@index([competitionId])
-  @@index([competitionId, belt, gender, ageDivisionId, weightClassId])
-  @@index([ageDivisionId])
-  @@index([weightClassId])
-  @@map("categories")
-}
-
+/// Stores the resolved category assignment directly — no Category table needed.
 model Registration {
-  id            String   @id @default(uuid()) @db.Uuid
-  competitionId String   @db.Uuid
-  competitorId  String   @db.Uuid
-  categoryId    String   @db.Uuid
-  createdAt     DateTime @default(now())
+  id              String   @id @default(uuid()) @db.Uuid
+  competitionId   String   @db.Uuid
+  competitorId    String   @db.Uuid
+  belt            Belt
+  ageDivisionId   String   @db.Uuid
+  weightClassId   String   @db.Uuid
+  createdAt       DateTime @default(now())
 
-  competition Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  competitor  CompetitorProfile @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  category    Category          @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  competition   Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  competitor    CompetitorProfile @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  ageDivision   AgeDivision       @relation(fields: [ageDivisionId], references: [id])
+  weightClass   WeightClass       @relation(fields: [weightClassId], references: [id])
 
   @@unique([competitionId, competitorId])
   @@index([competitionId])
   @@index([competitorId])
-  @@index([categoryId])
+  @@index([ageDivisionId])
+  @@index([weightClassId])
   @@map("registrations")
 }
 

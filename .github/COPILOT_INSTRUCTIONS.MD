@@ -104,8 +104,6 @@ Folder structure:
 
 # 6. DATABASE DESIGN PRINCIPLES
 
-The database must represent CBJJO structure correctly.
-
 CBJJO categories are defined by:
 
 - Belt
@@ -113,14 +111,24 @@ CBJJO categories are defined by:
 - Age Division
 - Weight Class
 
+`AgeDivision` and `WeightClass` are shared lookup tables seeded once from the CBJJO 2026 rules.
+They are NOT per-competition — they represent the global official table.
+
+There is NO `Category` table.
+
+At enrollment time, the domain matcher resolves which `AgeDivision` and `WeightClass` apply
+to the competitor, and those IDs are stored directly on `Registration` alongside `belt`.
+
 IMPORTANT RULE:
 
-- For divisions below JUVENIL, categories may be MISTO.
-- From JUVENIL and above, categories must be separated by gender (MASCULINO / FEMININO).
-- This rule must be enforced at generation time, not manually.
+- For divisions below JUVENIL, WeightClass.gender = MISTO.
+- From JUVENIL and above, WeightClass.gender = MASCULINO or FEMININO.
+- This is enforced by the seeded data and the matcher, not by a generation step.
 
-Categories must NOT be manually hardcoded.
-They must be generated from structured CBJJO template data.
+Age calculation rule:
+
+- Always use exact birthday (UTC): full years elapsed, minus 1 if birthday has not yet occurred.
+- Apply this rule in BOTH the domain matcher and all display helpers (`lib/labels.ts`).
 
 ---
 
@@ -142,22 +150,21 @@ Gender enum must include:
 
 ---
 
-## WeightClass
+## AgeDivision
 
-- May have gender = MISTO for divisions below JUVENIL
-- For JUVENIL and above, must be gender-specific
+- Seeded from official CBJJO 2026 table (11 divisions)
+- Shared across all competitions — NOT per-competition
+- Fields: code (AgeDivisionCode), minAge, maxAge
 
 ---
 
-## Category
+## WeightClass
 
-- gender must match WeightClass.gender
-- For divisions below JUVENIL:
-    - gender = MISTO
-- For JUVENIL and above:
-    - gender = MASCULINO or FEMININO
-
-Consistency between Category.gender and WeightClass.gender must be guaranteed by the generator service.
+- Seeded from official CBJJO 2026 table
+- Shared across all competitions — NOT per-competition
+- gender = MISTO for divisions below JUVENIL
+- gender = MASCULINO or FEMININO for JUVENIL and above
+- FK to AgeDivision
 
 ---
 
@@ -165,6 +172,13 @@ Consistency between Category.gender and WeightClass.gender must be guaranteed by
 
 - unique(competitionId, competitorId)
 - Must be created transactionally
+- Stores the resolved category assignment directly:
+  - `belt` Belt (from competitor profile)
+  - `ageDivisionId` FK → AgeDivision
+  - `weightClassId` FK → WeightClass
+
+NOTE: There is NO `Category` table. The "category" is fully described
+by the combination of `belt` + `ageDivision` + `weightClass` on the Registration itself.
 
 ---
 
@@ -176,30 +190,33 @@ Location:
 Pure function:
 
 matchCategory(
-  competitor: CompetitorProfile,
+  competitor: CompetitorInput,
   competitionDate: Date,
-  categories: CategoryWithRelations[]
-): Category
+  weightClasses: WeightClassWithDivisionInput[]  // loaded from DB by enrollmentService
+): WeightClassWithDivisionInput
+
+The caller (enrollmentService) loads all WeightClass rows with their AgeDivision
+and maps them to the domain input type before calling matchCategory.
+matchCategory itself has NO DB access.
 
 Rules:
 
-1. Calculate age using birthDate and competitionDate
-2. Determine AgeDivision
-3. Filter categories by:
-    - Belt
-    - AgeDivision
-    - Weight range
-4. Gender matching rule:
-
-    A category matches if:
-        category.gender === competitor.gender
-        OR
-        category.gender === MISTO
-
-5. Must return EXACTLY ONE category
-6. Throw DomainError if:
+1. Calculate age using exact birthday (UTC):
+   - years = competitionDate.getUTCFullYear() - birthDate.getUTCFullYear()
+   - subtract 1 if birthday has not yet occurred in competitionDate's year
+2. Filter weight classes by:
+    - Competitor belt === weightClass belt parameter (passed separately; WeightClass has no belt)
+    - Age falls within ageDivision.minAge and ageDivision.maxAge
+    - Gender: weightClass.gender === competitor.gender OR weightClass.gender === MISTO
+    - Weight: competitor.weight within [minWeight, maxWeight] (9999 = open-ended)
+3. Exclude weight classes named "Absoluto" from automatic matching
+4. Must return EXACTLY ONE match
+5. Throw DomainError if:
     - No match
     - Multiple matches
+
+Note: Belt is NOT a property of WeightClass — it comes from CompetitorProfile.
+The enrollmentService stores belt + ageDivisionId + weightClassId on Registration.
 
 Must be:
 
@@ -213,28 +230,23 @@ Must be:
 
 # 9. CBJJO TEMPLATE STRATEGY
 
-File:
-/data/cbjjo-2026-template.json
+File: `prisma/seed.ts`
 
-The template must define:
-
-- Age divisions
-- Weight classes per age division
-- Gender rules per division
-
-IMPORTANT: Categories are seeded automatically at application startup via `prisma/seed.ts`.
-There is NO admin UI to generate categories. The seed is the single source of truth.
+The seed is the single source of truth for CBJJO 2026 data.
+CBJJO data is embedded directly in `seed.ts` as TypeScript constants (no external JSON file).
 
 The seed must:
 
-1. Load template
-2. Ensure AgeDivisions exist
-3. Ensure WeightClasses exist
-4. Generate Categories for all competitions already in DB:
-    - All belts
-    - Correct gender rule per division
-    - All weight classes
-5. Be idempotent
+1. Upsert all 11 AgeDivisions (code, minAge, maxAge)
+2. Upsert all WeightClasses per division per gender (name, minWeight, maxWeight, gender, ageDivisionId)
+3. Be idempotent
+
+The seed does NOT generate `Category` rows — there is no such table.
+There is NO admin UI for category generation.
+There is NO `data/cbjjo-2026-template.json` file.
+
+After running the seed, the DB contains the global lookup tables.
+The domain matcher reads these at enrollment time via `enrollmentService`.
 
 ---
 
@@ -270,7 +282,7 @@ Admin must be able to:
 - Export Excel
 - Export PDF
 
-Admin does NOT manage category generation. Categories are seeded automatically.
+Admin does NOT manage categories. There is no category generation step.
 
 ---
 
@@ -326,6 +338,9 @@ Do NOT implement:
 - QR check-in
 - Rankings
 - Admin UI for category generation
+- A `Category` database table (categories are derived at enrollment time, not pre-generated)
+- A category generator service (`services/categoryGenerator.ts` must not exist)
+- An external JSON file for CBJJO data (`data/cbjjo-2026-template.json` must not exist)
 
 ---
 

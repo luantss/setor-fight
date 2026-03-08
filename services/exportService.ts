@@ -54,7 +54,8 @@ async function fetchData(competitionId: string, prisma: PrismaClient) {
   const registrations = await prisma.registration.findMany({
     where: { competitionId },
     include: {
-      category: { include: { ageDivision: true, weightClass: true } },
+      ageDivision: true,
+      weightClass: true,
       competitor: true,
     },
     orderBy: { competitor: { name: "asc" } },
@@ -63,14 +64,14 @@ async function fetchData(competitionId: string, prisma: PrismaClient) {
   const groupMap = new Map<string, CategoryGroup>();
 
   for (const reg of registrations) {
-    const key = reg.categoryId;
+    const key = `${reg.belt}|${reg.ageDivision.code}|${reg.weightClass.name}|${reg.weightClass.gender}`;
     if (!groupMap.has(key)) {
       groupMap.set(key, {
         categoryName: buildCategoryName(
-          reg.category.belt,
-          reg.category.gender,
-          reg.category.ageDivision.code,
-          reg.category.weightClass.name,
+          reg.belt,
+          reg.weightClass.gender,
+          reg.ageDivision.code,
+          reg.weightClass.name,
         ),
         rows: [],
       });
@@ -79,8 +80,8 @@ async function fetchData(competitionId: string, prisma: PrismaClient) {
     groupMap.get(key)!.rows.push({
       name: reg.competitor.name,
       belt: reg.competitor.belt,
-      ageDivisionCode: reg.category.ageDivision.code,
-      weightClassName: reg.category.weightClass.name,
+      ageDivisionCode: reg.ageDivision.code,
+      weightClassName: reg.weightClass.name,
       weight: reg.competitor.weight,
       gender: reg.competitor.gender as "MASCULINO" | "FEMININO",
       age: calculateAge(reg.competitor.birthDate, competition.date),

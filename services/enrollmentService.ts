@@ -15,8 +15,9 @@ import type { PrismaClient, Registration } from "@/app/generated/prisma/client";
 import {
   matchCategory,
   DomainError,
-  type CategoryInput,
+  type WeightClassWithDivisionInput,
   type CompetitorInput,
+  type CategoryGender,
 } from "@/domain/categoryMatcher";
 
 // ---------------------------------------------------------------------------
@@ -48,7 +49,6 @@ export class EnrollmentServiceError extends Error {
 export interface EnrollmentResult {
   registration: Registration;
   category: {
-    id: string;
     belt: string;
     gender: string;
     ageDivisionCode: string;
@@ -112,14 +112,6 @@ export async function enrollCompetitor(
         competitorId: profile.id,
       },
     },
-    include: {
-      category: {
-        include: {
-          ageDivision: true,
-          weightClass: true,
-        },
-      },
-    },
   });
 
   if (existingRegistration) {
@@ -129,31 +121,23 @@ export async function enrollCompetitor(
     );
   }
 
-  // 4) Fetch categories for matching ----------------------------------------
-  const dbCategories = await prisma.category.findMany({
-    where: { competitionId },
-    include: {
-      ageDivision: true,
-      weightClass: true,
-    },
+  // 4) Fetch all weight classes for matching --------------------------------
+  const dbWeightClasses = await prisma.weightClass.findMany({
+    include: { ageDivision: true },
   });
 
   // Map DB rows to domain types
-  const domainCategories: CategoryInput[] = dbCategories.map((cat) => ({
-    id: cat.id,
-    belt: cat.belt as CategoryInput["belt"],
-    gender: cat.gender as CategoryInput["gender"],
+  const domainWeightClasses: WeightClassWithDivisionInput[] = dbWeightClasses.map((wc) => ({
+    id: wc.id,
+    name: wc.name,
+    minWeight: wc.minWeight,
+    maxWeight: wc.maxWeight,
+    gender: wc.gender as CategoryGender,
     ageDivision: {
-      id: cat.ageDivision.id,
-      minAge: cat.ageDivision.minAge,
-      maxAge: cat.ageDivision.maxAge,
-    },
-    weightClass: {
-      id: cat.weightClass.id,
-      name: cat.weightClass.name,
-      minWeight: cat.weightClass.minWeight,
-      maxWeight: cat.weightClass.maxWeight,
-      gender: cat.weightClass.gender as CategoryInput["gender"],
+      id: wc.ageDivision.id,
+      code: wc.ageDivision.code,
+      minAge: wc.ageDivision.minAge,
+      maxAge: wc.ageDivision.maxAge,
     },
   }));
 
@@ -165,12 +149,12 @@ export async function enrollCompetitor(
   };
 
   // 5) Run category matching engine -----------------------------------------
-  let matchedCategory: CategoryInput;
+  let matched: WeightClassWithDivisionInput;
   try {
-    matchedCategory = matchCategory(
+    matched = matchCategory(
       competitorInput,
       competition.date,
-      domainCategories,
+      domainWeightClasses,
     );
   } catch (err) {
     if (err instanceof DomainError) {
@@ -200,27 +184,25 @@ export async function enrollCompetitor(
     return tx.registration.create({
       data: {
         competitionId,
-        competitorId: profile.id,
-        categoryId: matchedCategory.id,
+        competitorId:  profile.id,
+        belt:          profile.belt,
+        ageDivisionId: matched.ageDivision.id,
+        weightClassId: matched.id,
       },
     });
   });
 
-  // Fetch matched category details for the result
-  const dbMatchedCategory = dbCategories.find((c) => c.id === matchedCategory.id)!;
-
   return {
     registration,
     category: {
-      id: dbMatchedCategory.id,
-      belt: dbMatchedCategory.belt,
-      gender: dbMatchedCategory.gender,
-      ageDivisionCode: dbMatchedCategory.ageDivision.code,
-      ageDivisionMinAge: dbMatchedCategory.ageDivision.minAge,
-      ageDivisionMaxAge: dbMatchedCategory.ageDivision.maxAge,
-      weightClassName: dbMatchedCategory.weightClass.name,
-      weightClassMinWeight: dbMatchedCategory.weightClass.minWeight,
-      weightClassMaxWeight: dbMatchedCategory.weightClass.maxWeight,
+      belt:                 profile.belt,
+      gender:               matched.gender,
+      ageDivisionCode:      matched.ageDivision.code,
+      ageDivisionMinAge:    matched.ageDivision.minAge,
+      ageDivisionMaxAge:    matched.ageDivision.maxAge,
+      weightClassName:      matched.name,
+      weightClassMinWeight: matched.minWeight,
+      weightClassMaxWeight: matched.maxWeight ?? 9999,
     },
   };
 }

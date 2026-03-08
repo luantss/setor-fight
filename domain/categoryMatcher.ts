@@ -16,7 +16,7 @@ export type Belt = "BRANCA" | "AZUL" | "ROXA" | "MARROM" | "PRETA";
 /** Competitor gender is always MASCULINO or FEMININO — never MISTO. */
 export type CompetitorGender = "MASCULINO" | "FEMININO";
 
-/** Category gender may be MISTO for divisions below JUVENIL. */
+/** Weight class gender may be MISTO for divisions below JUVENIL. */
 export type CategoryGender = "MASCULINO" | "FEMININO" | "MISTO";
 
 export interface CompetitorInput {
@@ -28,11 +28,12 @@ export interface CompetitorInput {
 
 export interface AgeDivisionInput {
   id: string;
+  code: string;
   minAge: number;
   maxAge: number;
 }
 
-export interface WeightClassInput {
+export interface WeightClassWithDivisionInput {
   id: string;
   name: string;
   /** 0 = no lower limit. */
@@ -40,14 +41,7 @@ export interface WeightClassInput {
   /** null or 9999 = open-ended (Pesadíssimo / Absoluto). */
   maxWeight: number | null;
   gender: CategoryGender;
-}
-
-export interface CategoryInput {
-  id: string;
-  belt: Belt;
-  gender: CategoryGender;
   ageDivision: AgeDivisionInput;
-  weightClass: WeightClassInput;
 }
 
 // ---------------------------------------------------------------------------
@@ -66,23 +60,21 @@ export class DomainError extends Error {
 // ---------------------------------------------------------------------------
 
 /**
- * CBJJO uses the age the competitor turns during the competition calendar year.
- * Example: born Dec 2008, competition Nov 2026 → age = 17 (not yet 18).
+ * Calculates exact age using UTC dates.
+ * Subtracts 1 year if the birthday has not yet occurred in the competition year.
  */
 export function calculateCompetitorAge(birthDate: Date, competitionDate: Date): number {
-  return competitionDate.getFullYear() - birthDate.getFullYear();
+  const years = competitionDate.getUTCFullYear() - birthDate.getUTCFullYear();
+  const hasBirthdayOccurred =
+    competitionDate.getUTCMonth() > birthDate.getUTCMonth() ||
+    (competitionDate.getUTCMonth() === birthDate.getUTCMonth() &&
+      competitionDate.getUTCDate() >= birthDate.getUTCDate());
+  return hasBirthdayOccurred ? years : years - 1;
 }
 
 // ---------------------------------------------------------------------------
 // Predicate helpers (pure, exported for unit testing)
 // ---------------------------------------------------------------------------
-
-export function matchesBelt(
-  categoryBelt: Belt,
-  competitorBelt: Belt,
-): boolean {
-  return categoryBelt === competitorBelt;
-}
 
 export function matchesAgeDivision(
   ageDivision: AgeDivisionInput,
@@ -92,15 +84,15 @@ export function matchesAgeDivision(
 }
 
 /**
- * A category matches a competitor's gender when:
- *   - category.gender === competitor.gender  (exact match), or
- *   - category.gender === MISTO              (open to all genders, used below JUVENIL)
+ * A weight class matches a competitor's gender when:
+ *   - weightClass.gender === competitor.gender  (exact match), or
+ *   - weightClass.gender === MISTO              (open to all genders, used below JUVENIL)
  */
 export function matchesGender(
-  categoryGender: CategoryGender,
+  wcGender: CategoryGender,
   competitorGender: CompetitorGender,
 ): boolean {
-  return categoryGender === competitorGender || categoryGender === "MISTO";
+  return wcGender === competitorGender || wcGender === "MISTO";
 }
 
 /**
@@ -108,7 +100,7 @@ export function matchesGender(
  * null / 9999 maxWeight means the class is open-ended (Pesadíssimo).
  */
 export function matchesWeight(
-  weightClass: WeightClassInput,
+  weightClass: WeightClassWithDivisionInput,
   weight: number,
 ): boolean {
   if (weight < weightClass.minWeight) return false;
@@ -116,44 +108,39 @@ export function matchesWeight(
   return weight <= weightClass.maxWeight;
 }
 
-/**
- * Absoluto is a supplementary enrollment — never assigned automatically.
- * Exclude it from the primary matching algorithm.
- */
-function isAbsoluto(category: CategoryInput): boolean {
-  return category.weightClass.name.toLowerCase() === "absoluto";
-}
-
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 /**
- * Assigns exactly one category to a competitor.
+ * Assigns exactly one WeightClass (with its AgeDivision) to a competitor.
  *
- * Matching order:
- *   1. Belt
- *   2. Age division (calculated from competition date)
- *   3. Gender (MISTO categories accept any competitor gender)
- *   4. Weight range
+ * Belt is NOT a filter here — it comes from the competitor profile and is
+ * stored directly on Registration by the caller (enrollmentService).
+ *
+ * Matching rules:
+ *   1. Age division (exact birthday calculation using UTC dates)
+ *   2. Gender (MISTO weight classes accept any competitor gender)
+ *   3. Weight range (inclusive; 9999 = open-ended)
+ *
+ * "Absoluto" weight classes are excluded from automatic matching.
  *
  * Throws DomainError if no match or if multiple matches are found.
  */
 export function matchCategory(
   competitor: CompetitorInput,
   competitionDate: Date,
-  categories: CategoryInput[],
-): CategoryInput {
+  weightClasses: WeightClassWithDivisionInput[],
+): WeightClassWithDivisionInput {
   const age = calculateCompetitorAge(competitor.birthDate, competitionDate);
 
-  const candidates = categories.filter((category) => {
-    if (isAbsoluto(category)) return false;
+  const candidates = weightClasses.filter((wc) => {
+    if (wc.name.toLowerCase() === "absoluto") return false;
 
     return (
-      matchesBelt(category.belt, competitor.belt) &&
-      matchesAgeDivision(category.ageDivision, age) &&
-      matchesGender(category.gender, competitor.gender) &&
-      matchesWeight(category.weightClass, competitor.weight)
+      matchesAgeDivision(wc.ageDivision, age) &&
+      matchesGender(wc.gender, competitor.gender) &&
+      matchesWeight(wc, competitor.weight)
     );
   });
 
@@ -166,7 +153,7 @@ export function matchCategory(
 
   if (candidates.length > 1) {
     const names = candidates
-      .map((c) => c.weightClass.name)
+      .map((wc) => wc.name)
       .join(", ");
 
     throw new DomainError(

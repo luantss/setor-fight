@@ -16,12 +16,12 @@ export default async function Navbar() {
 
         {/* Nav links */}
         <div className="flex items-center gap-6 text-sm">
-          {/* Competições is always visible */}
+          {/* Campeonatos is always visible */}
           <Link
             href="/competicoes"
             className="hover:text-red-400 transition-colors"
           >
-            Competições
+            Campeonatos
           </Link>
 
           {user ? (

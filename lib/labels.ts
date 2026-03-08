@@ -28,9 +28,12 @@ export const ageDivisionLabel: Record<AgeDivisionCode, string> = {
   INFANTO_JUVENIL_1: "Infanto-Juvenil 1",
   INFANTO_JUVENIL_2: "Infanto-Juvenil 2",
   INFANTO_JUVENIL_3: "Infanto-Juvenil 3",
-  JUVENIL: "Juvenil",
-  ADULTO: "Adulto",
-  MASTER: "Master",
+  JUVENIL_MASCULINO: "Juvenil Masculino",
+  JUVENIL_FEMININO: "Juvenil Feminino",
+  ADULTO_MASCULINO: "Adulto Masculino",
+  ADULTO_FEMININO: "Adulto Feminino",
+  MASTER_MASCULINO: "Master Masculino",
+  MASTER_FEMININO: "Master Feminino",
 };
 
 export function buildCategoryName(

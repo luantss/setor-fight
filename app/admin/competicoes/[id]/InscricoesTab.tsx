@@ -20,7 +20,7 @@ export interface RegistrationRow {
 }
 
 export interface CategoryGroup {
-  categoryId: string;
+  categoryKey: string;
   categoryName: string;
   registrations: RegistrationRow[];
 }
@@ -175,7 +175,7 @@ export default function InscricoesTab({
       ) : (
         <div className="space-y-2">
           {groups.map((group) => (
-            <AccordionItem key={group.categoryId} group={group} />
+            <AccordionItem key={group.categoryKey} group={group} />
           ))}
         </div>
       )}
